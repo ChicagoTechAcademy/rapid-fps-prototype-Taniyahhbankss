@@ -8,6 +8,9 @@ AFPSProjectile::AFPSProjectile()
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
+    // Set the sphere's collision profile name to "Projectile".
+    CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+
     if (!RootComponent)
     {
         RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSceneComponent"));
@@ -32,9 +35,11 @@ AFPSProjectile::AFPSProjectile()
         ProjectileMovementComponent->MaxSpeed = 3000.0f;
         ProjectileMovementComponent->bRotationFollowsVelocity = true;
         ProjectileMovementComponent->bShouldBounce = true;
-        ProjectileMovementComponent->Bounciness = 0.3f;
+        ProjectileMovementComponent->Bounciness = 6.3f;
         ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
     }
+    // Delete the projectile after 3 seconds.
+    InitialLifeSpan = 30.0f;
 }
 
 // Called when the game starts or when spawned
@@ -55,4 +60,36 @@ void AFPSProjectile::Tick(float DeltaTime)
 void AFPSProjectile::FireInDirection(const FVector& ShootDirection)
 {
     ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
+}
+
+void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+}
+
+// Function that is called when the projectile hits something.
+void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+    if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+    {
+        OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
+    }
+    //Destroy();
+
+    // Event called when component hits something.
+    CollisionComponent->OnComponentHit.AddDynamic(this, &AFPSProjectile::OnHit);
+
+    // Disable the Projectile Movement Component
+    if (ProjectileMovementComponent)
+    {
+        ProjectileMovementComponent->StopMovementImmediately();
+        ProjectileMovementComponent->SetActive(false);
+    }
+
+    // Enable physics simulation on the collision componet
+    if (CollisionComponent)
+    {
+        CollisionComponent->SetSimulatePhysics(true);
+        // Apply the current velcity as an impulse to maintain momentum
+        CollisionComponent->AddImpulse(ProjectileMovementComponent->Velocity);
+    }
 }
