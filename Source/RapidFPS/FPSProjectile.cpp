@@ -8,9 +8,7 @@ AFPSProjectile::AFPSProjectile()
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
-    // Set the sphere's collision profile name to "Projectile".
-    CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
-
+    
     if (!RootComponent)
     {
         RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSceneComponent"));
@@ -25,6 +23,10 @@ AFPSProjectile::AFPSProjectile()
         // Set the root component to be the collision component.
         RootComponent = CollisionComponent;
     }
+
+    // Set the sphere's collision profile name to "Projectile".
+    CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+
 
     if (!ProjectileMovementComponent)
     {
@@ -62,9 +64,6 @@ void AFPSProjectile::FireInDirection(const FVector& ShootDirection)
     ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
 }
 
-void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-{
-}
 
 // Function that is called when the projectile hits something.
 void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
