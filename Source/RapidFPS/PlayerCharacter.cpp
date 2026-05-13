@@ -10,6 +10,9 @@ APlayerCharacter::APlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	currentAmmo = maxAmmo;
+	storedAmmo = maxAmmo * 2;
+
 }
 
 // Called when the game starts or when spawned
@@ -46,6 +49,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 }
 
+void APlayerCharacter::DecreaseAmmo(int ammoSpent)
+{
+	currentAmmo -= ammoSpent;
+}
+
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -71,11 +79,13 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 void APlayerCharacter::Jump(const FInputActionValue& Value)
 {
-   //UE_LOG(LogTemp, Warning, TEXT("You pressed a jump button"));
+   UE_LOG(LogTemp, Warning, TEXT("You pressed a jump button"));
 }
 
 void APlayerCharacter::Shoot(const FInputActionValue& Value)
 {
+	if (currentAmmo > 0)
+		{
 		// Attempt to fire a projectile.
 		if (ProjectileClass)
 		{
@@ -108,14 +118,32 @@ void APlayerCharacter::Shoot(const FInputActionValue& Value)
 					// Set the projectile's initial trajectory.
 					FVector LaunchDirection = MuzzleRotation.Vector();
 					Projectile->FireInDirection(LaunchDirection);
+					DecreaseAmmo(1);
 				}
 			}
 		}
 	}
 
+		}
+		
 
 void APlayerCharacter::Reload(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("You pressed a reload button"));
+
+// if stored ammo = 7, then 7> 5 that works
+	// what if stored ammo is 2? 2 !>5 , what do we do?
+
+	// loops repeat 
+	
+
+	while ((currentAmmo < maxAmmo) && storedAmmo >0)
+	{
+		currentAmmo += 1;
+		storedAmmo -= 1;
+
+		UE_LOG(LogTemp, Warning, TEXT("Stored Ammo: %d") ,storedAmmo);
+		UE_LOG(LogTemp, Warning, TEXT("Current Ammo: %d"), currentAmmo);
+	}
+
 }
 
